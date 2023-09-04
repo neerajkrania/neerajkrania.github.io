@@ -85,7 +85,7 @@
     })
 
     data['products'].forEach((sub) => {
-      if(sub['show-in-about-us']){
+      if(sub['show-in-about-us']!="false"){
         aboutUs = aboutUs + `<div class="icon-box" data-aos="fade-up" data-aos-delay="100">
                 <div class="icon"><i class="${sub['icon']}"></i></div>
                 <h4 class="title"><a href="">${sub['title']}</a></h4>
@@ -132,7 +132,7 @@
 
     let bottomProducts = ''
     data['products'].forEach((product) => {
-      if(product['show-in-bottom']){
+      if(product['show-in-bottom']!="false"){
         bottomProducts = bottomProducts + `<li><i class="bx bx-chevron-right"></i> <a href="#">${product['title']}</a></li>`
       }
     })
