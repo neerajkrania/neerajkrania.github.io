@@ -140,6 +140,17 @@
     let logo = `<a href="index.html"><img src="${data['ownerDetails']['logo']}" alt="" class="img-fluid"></a>`
 
     let ourWhatsapp = `<a href="https://wa.me/91${data['ownerDetails']['whatsapp']}" target="_blank">+91 ${data['ownerDetails']['whatsapp']}</a>`
+
+    let whyChooseUs = ''
+    data['whyChooseUs'].forEach((val, index) => {
+      whyChooseUs = whyChooseUs + `<div class="col-lg-6 faq-item" data-aos="fade-up" ${index > 0 ? 'data-aos-delay="'+index+'00"' : ''}>
+            <h4>${val['title']}</h4>
+            <p>
+              ${val['subTitle']}
+            </p>
+          </div>`
+    })
+
     document.getElementById("data-mainSlider").innerHTML = Slides;
     document.getElementById("data-aboutUs").innerHTML = aboutUs;
     document.getElementById("data-countSection").innerHTML = counts;
@@ -151,6 +162,7 @@
     document.getElementById("data-product").innerHTML = products
     document.getElementById("data-product-bottom").innerHTML = bottomProducts
     document.getElementById("data-logo").innerHTML = logo
+    document.getElementById("data-whyChooseUs").innerHTML = whyChooseUs
 
   </script>
 </head>
@@ -431,43 +443,8 @@
           <h2>Why Choose Krania Traders?</h2>
         </div>
 
-        <div class="row  d-flex align-items-stretch">
-
-          <div class="col-lg-6 faq-item" data-aos="fade-up">
-            <h4>Quality Assurance</h4>
-            <p>
-              At Krania Traders, we adhere to stringent quality control standards to ensure that every product you receive meets the highest quality benchmarks. We take pride in delivering reliable and durable solutions.
-            </p>
-          </div>
-
-          <div class="col-lg-6 faq-item" data-aos="fade-up" data-aos-delay="100">
-            <h4>Product Diversity</h4>
-            <p>
-              Our wide product range is tailored to cater to the diverse needs of businesses across various industries. Whatever your requirements may be, you'll find the perfect solution within our offerings.
-            </p>
-          </div>
-
-          <div class="col-lg-6 faq-item" data-aos="fade-up" data-aos-delay="200">
-            <h4>Competitive Pricing</h4>
-            <p>
-              We understand the importance of cost-effectiveness in today's business landscape. Our competitive pricing ensures that you get the best value for your investment without compromising on quality.
-            </p>
-          </div>
-
-          <div class="col-lg-6 faq-item" data-aos="fade-up" data-aos-delay="300">
-            <h4>Customer-Centric Approach</h4>
-            <p>
-              Your satisfaction is our top priority. Our dedicated customer support team is always ready to assist you with any inquiries or concerns, ensuring a seamless and pleasant shopping experience.
-            </p>
-          </div>
-
-          <div class="col-lg-6 faq-item" data-aos="fade-up" data-aos-delay="400">
-            <h4>Sustainability</h4>
-            <p>
-              We are committed to sustainable practices and eco-friendly product options, reflecting our dedication to a greener future.
-            </p>
-          </div>
-
+        <div class="row  d-flex align-items-stretch" id="data-whyChooseUs">
+            <!-- $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ -->
         </div>
 
       </div>
