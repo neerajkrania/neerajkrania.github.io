@@ -34,6 +34,8 @@
     // Import the functions you need from the SDKs you need
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.3.1/firebase-app.js";
     import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.3.1/firebase-analytics.js";
+    import { getFirestore, getDocs, collection } from 'https://www.gstatic.com/firebasejs/10.3.1/firebase-firestore.js'
+
     // TODO: Add SDKs for Firebase products that you want to use
     // https://firebase.google.com/docs/web/setup#available-libraries
   
@@ -52,6 +54,104 @@
     // Initialize Firebase
     const app = initializeApp(firebaseConfig);
     const analytics = getAnalytics(app);
+    const db = getFirestore(app);
+    
+    const dataFromApi = await getDocs(collection(db,'krania-traders'))
+    var data = {}
+    dataFromApi.forEach((doc) => {
+      data = doc.data()
+    });
+
+    //data entry
+
+    let aboutUs = `<div class="section-title">
+              <h2>About Us</h2>
+              <p>
+                ${data['aboutUs']['content']}
+              </p>
+              </div>`
+              
+    let Slides = ''
+    data['mainSlider'].forEach((slide, index) => {
+      Slides = Slides + `<div class="carousel-item ${index == 0 ? 'active': ''}" style="background-image: url('${slide['url']}');">
+            <div class="carousel-container">
+              <div class="carousel-content container">
+                <h2 class="animate__animated animate__fadeInDown">${slide['title']}</h2>
+                <p class="animate__animated animate__fadeInUp">${slide['subtitle']}</p>
+                <a href="#about" class="btn-get-started animate__animated animate__fadeInUp scrollto">Read More</a>
+              </div>
+            </div>
+          </div>`
+    })
+
+    data['products'].forEach((sub) => {
+      if(sub['show-in-about-us']){
+        aboutUs = aboutUs + `<div class="icon-box" data-aos="fade-up" data-aos-delay="100">
+                <div class="icon"><i class="${sub['icon']}"></i></div>
+                <h4 class="title"><a href="">${sub['title']}</a></h4>
+              </div>`
+      }
+    })
+
+    let counts =''
+    data['countSection'].forEach((count) => {
+      counts = counts + `<div class="col-lg-3 col-md-6 text-center" data-aos="fade-up">
+            <div class="count-box">
+              <i class="${count['icon']}" style="color:${count['color']}"></i>
+              <span data-toggle="${count['count-animation'] ? 'counter-up' : ''}">${count['count']}</span>
+              <p>${count['title']}</p>
+            </div>
+          </div>`
+    })
+
+    let bottomAddress = `${data['ownerDetails']['address1']}<br>
+              ${data['ownerDetails']['address2']}<br>
+              ${data['ownerDetails']['address3']}<br>
+              Phone: <a style="color:white;font-weight:bold;text-decoration: none;" href="tel:${data['ownerDetails']['phone']}">+91 ${data['ownerDetails']['phone']}</a><br>
+              Email: <a style="color:white;font-weight:bold;text-decoration: none;" href="mailto:${data['ownerDetails']['email']}">${data['ownerDetails']['email']}</a><br>
+              Whatsapp: <a style="color:white;font-weight:bold;text-decoration: none;" href="https://wa.me/91${data['ownerDetails']['whatsapp']}" target="_blank">+91 ${data['ownerDetails']['whatsapp']}</a><br>`;
+    
+    let ourAddress = `<div class="info-box">
+              <i class="bx bx-map"></i>
+              <h3>Our Address</h3>
+              <p>${data['ownerDetails']['address1']}<br/> ${data['ownerDetails']['address2']}<br/>${data['ownerDetails']['address3']}</p>
+            </div>`
+   
+    let ourEmail = `<a href="mailto:${data['ownerDetails']['email']}">${data['ownerDetails']['email']}</a>`
+
+    let ourMobile = `<a href="tel:${data['ownerDetails']['phone']}">+91 ${data['ownerDetails']['phone']}</a>`
+
+    let products = ''
+    data['products'].forEach((product, index) => {
+      products = products + `<div class="col-lg-4 col-md-6 icon-box" data-aos="fade-up" ${index > 0 ? 'data-aos-delay="'+index+'00"' : ''}>
+            <div class="icon"><i class="${product['icon']}"></i></div>
+            <h4 class="title"><a href="">${product['title']}</a></h4>
+            <p class="description">${product['sub-text']}</p>
+          </div>`
+    })
+
+    let bottomProducts = ''
+    data['products'].forEach((product) => {
+      if(product['show-in-bottom']){
+        bottomProducts = bottomProducts + `<li><i class="bx bx-chevron-right"></i> <a href="#">${product['title']}</a></li>`
+      }
+    })
+
+    let logo = `<a href="index.html"><img src="${data['ownerDetails']['logo']}" alt="" class="img-fluid"></a>`
+
+    let ourWhatsapp = `<a href="https://wa.me/91${data['ownerDetails']['whatsapp']}" target="_blank">+91 ${data['ownerDetails']['whatsapp']}</a>`
+    document.getElementById("data-mainSlider").innerHTML = Slides;
+    document.getElementById("data-aboutUs").innerHTML = aboutUs;
+    document.getElementById("data-countSection").innerHTML = counts;
+    document.getElementById("data-address-bottom").innerHTML = bottomAddress
+    document.getElementById("data-address-our").innerHTML = ourAddress
+    document.getElementById("data-address-ourEmail").innerHTML = ourEmail
+    document.getElementById("data-address-ourMobile").innerHTML = ourMobile
+    document.getElementById("data-address-ourWhatsapp").innerHTML = ourWhatsapp
+    document.getElementById("data-product").innerHTML = products
+    document.getElementById("data-product-bottom").innerHTML = bottomProducts
+    document.getElementById("data-logo").innerHTML = logo
+
   </script>
 </head>
 
@@ -81,8 +181,8 @@
 
       <div class="logo float-left">
         <!-- Uncomment below if you prefer to use an image logo -->
-        <div class="logoOut">
-          <a href="index.html"><img src="assets/img/logo1.png" alt="" class="img-fluid"></a>
+        <div class="logoOut" id="data-logo">
+          <!-- $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ -->
         </div>
         <!-- <h1 class="text-light"><a href="index.html"><span>Krania Traders</span></a></h1> -->
       </div>
@@ -93,24 +193,6 @@
           <li><a href="#about">About Us</a></li>
           <li><a href="#Product">Product</a></li>
           <li><a href="#portfolio">Portfolio</a></li>
-          <!-- <li><a href="#team">Team</a></li> -->
-          <!-- <li class="drop-down"><a href="">Drop Down</a>
-            <ul>
-              <li><a href="#">Drop Down 1</a></li>
-              <li class="drop-down"><a href="#">Drop Down 2</a>
-                <ul>
-                  <li><a href="#">Deep Drop Down 1</a></li>
-                  <li><a href="#">Deep Drop Down 2</a></li>
-                  <li><a href="#">Deep Drop Down 3</a></li>
-                  <li><a href="#">Deep Drop Down 4</a></li>
-                  <li><a href="#">Deep Drop Down 5</a></li>
-                </ul>
-              </li>
-              <li><a href="#">Drop Down 3</a></li>
-              <li><a href="#">Drop Down 4</a></li>
-              <li><a href="#">Drop Down 5</a></li>
-            </ul>
-          </li> -->
           <li><a href="#contact">Contact Us</a></li>
         </ul>
       </nav><!-- .nav-menu -->
@@ -125,41 +207,8 @@
 
         <ol class="carousel-indicators" id="hero-carousel-indicators"></ol>
 
-        <div class="carousel-inner" role="listbox">
-
-          <!-- Slide 1 -->
-          <div class="carousel-item" style="background-image: url('assets/img/slide/slide1.png');">
-            <div class="carousel-container">
-              <div class="carousel-content container">
-                <h2 class="animate__animated animate__fadeInDown">Krania Traders</h2>
-                <p class="animate__animated animate__fadeInUp">Plastic Sheets.</p>
-                <a href="#about" class="btn-get-started animate__animated animate__fadeInUp scrollto">Read More</a>
-              </div>
-            </div>
-          </div>
-
-          <!-- Slide 2 -->
-          <div class="carousel-item" style="background-image: url('assets/img/slide/slide3.png');">
-            <div class="carousel-container">
-              <div class="carousel-content container">
-                <h2 class="animate__animated animate__fadeInDown">Krania Traders</h2>
-                <p class="animate__animated animate__fadeInUp">Stretch Film (Shrink Wrap Rolls).</p>
-                <a href="#about" class="btn-get-started animate__animated animate__fadeInUp scrollto">Read More</a>
-              </div>
-            </div>
-          </div>
-
-          <!-- Slide 3 -->
-          <div class="carousel-item active" style="background-image: url('assets/img/slide/slide2.png');">
-            <div class="carousel-container">
-              <div class="carousel-content container">
-                <h2 class="animate__animated animate__fadeInDown">Welcome to <span>Krania Traders</span></h2>
-                <p class="animate__animated animate__fadeInUp">Air Bubble Roll and Catering Disposable Items.</p>
-                <a href="#about" class="btn-get-started animate__animated animate__fadeInUp scrollto">Read More</a>
-              </div>
-            </div>
-          </div>
-
+        <div class="carousel-inner" role="listbox" id="data-mainSlider">
+          <!-- $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ -->
         </div>
 
         <a class="carousel-control-prev" href="#heroCarousel" role="button" data-slide="prev">
@@ -187,38 +236,8 @@
             <!-- <a href="https://www.youtube.com/watch?v=jDDaplaOz7Q" class="venobox play-btn mb-4" data-vbtype="video" data-autoplay="true"></a> -->
           </div>
 
-          <div class="col-lg-6 d-flex flex-column justify-content-center about-content">
-
-            <div class="section-title">
-              <h2>About Us</h2>
-              <p>At Krania Traders, we take immense pride in being your trusted partner for all your packaging and catering needs. With a relentless commitment to quality, innovation, and customer satisfaction, we have established ourselves as a leading supplier in the industry.
-              </p>
-            </div>
-
-            <div class="icon-box" data-aos="fade-up" data-aos-delay="100">
-              <div class="icon"><i class="icofont-layers"></i></div>
-              <h4 class="title"><a href="">Plastic Sheets</a></h4>
-              <!-- <p class="description">We offer a comprehensive selection of plastic sheets that cater to diverse industrial and commercial applications. Whether you need plastic sheets for packaging, manufacturing, or construction, our high-quality products are designed to meet your specific requirements.</p> -->
-            </div>
-
-            <div class="icon-box" data-aos="fade-up" data-aos-delay="100">
-              <div class="icon"><i class="icofont-paper"></i></div>
-              <h4 class="title"><a href="">Stretch Film (Shrink Wrap Rolls)</a></h4>
-              <!-- <p class="description">Our stretch film, also known as shrink wrap rolls, are engineered to secure and protect your goods during transit or storage. With exceptional durability and stretchability, our stretch film ensures your products remain intact and safe.</p> -->
-            </div>
-
-            <div class="icon-box" data-aos="fade-up" data-aos-delay="100">
-              <div class="icon"><i class="icofont-atom"></i></div>
-              <h4 class="title"><a href="">Air Bubble Roll</a></h4>
-              <!-- <p class="description">Protecting fragile items during shipping is crucial. Our air bubble rolls are designed to provide superior cushioning and protection, preventing damage to your valuable items. From delicate electronics to fragile glassware, trust our air bubble rolls to keep your items safe and sound.</p> -->
-            </div>
-
-            <div class="icon-box" data-aos="fade-up" data-aos-delay="100">
-              <div class="icon"><i class="icofont-spoon-and-fork"></i></div>
-              <h4 class="title"><a href="">Catering Disposable Items</a></h4>
-              <!-- <p class="description">Whether you're running a catering business, restaurant, or planning an event, our catering disposable items are designed to simplify your life. We offer an extensive range of disposable tableware and catering supplies, ensuring that your guests enjoy a hassle-free dining experience.</p> -->
-            </div>
-
+          <div class="col-lg-6 d-flex flex-column justify-content-center about-content" id="data-aboutUs">
+            <!-- $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ -->
           </div>
         </div>
 
@@ -229,40 +248,8 @@
     <section class="counts section-bg">
       <div class="container">
 
-        <div class="row">
-
-          <div class="col-lg-3 col-md-6 text-center" data-aos="fade-up">
-            <div class="count-box">
-              <i class="icofont-simple-smile" style="color: #20b38e;"></i>
-              <span data-toggle="counter-up">10,000</span>
-              <p>Happy Clients</p>
-            </div>
-          </div>
-
-          <div class="col-lg-3 col-md-6 text-center" data-aos="fade-up" data-aos-delay="200">
-            <div class="count-box">
-              <i class="icofont-document-folder" style="color: #c042ff;"></i>
-              <span data-toggle="counter-up">25</span>
-              <p>On Going Deals</p>
-            </div>
-          </div>
-
-          <div class="col-lg-3 col-md-6 text-center" data-aos="fade-up" data-aos-delay="400">
-            <div class="count-box">
-              <i class="icofont-live-support" style="color: #46d1ff;"></i>
-              <span>24x7</span>
-              <p>Hours Of Support</p>
-            </div>
-          </div>
-
-          <div class="col-lg-3 col-md-6 text-center" data-aos="fade-up" data-aos-delay="600">
-            <div class="count-box">
-              <i class="icofont-users-alt-5" style="color: #ffb459;"></i>
-              <span data-toggle="counter-up">475</span>
-              <p>Hard Workers</p>
-            </div>
-          </div>
-
+        <div class="row" id="data-countSection">
+          <!-- $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ -->
         </div>
 
       </div>
@@ -276,37 +263,8 @@
           <h2>Product</h2>
         </div>
 
-        <div class="row">
-          <div class="col-lg-4 col-md-6 icon-box" data-aos="fade-up">
-            <div class="icon"><i class="icofont-layers"></i></div>
-            <h4 class="title"><a href="">Plastic Sheets</a></h4>
-            <p class="description">We offer a comprehensive selection of plastic sheets that cater to diverse industrial and commercial applications. Whether you need plastic sheets for packaging, manufacturing, or construction, our high-quality products are designed to meet your specific requirements.</p>
-          </div>
-          <div class="col-lg-4 col-md-6 icon-box" data-aos="fade-up" data-aos-delay="100">
-            <div class="icon"><i class="icofont-paper"></i></div>
-            <h4 class="title"><a href="">Stretch Film (Shrink Wrap Rolls)</a></h4>
-            <p class="description">Our stretch film, also known as shrink wrap rolls, are engineered to secure and protect your goods during transit or storage. With exceptional durability and stretchability, our stretch film ensures your products remain intact and safe.</p>
-          </div>
-          <div class="col-lg-4 col-md-6 icon-box" data-aos="fade-up" data-aos-delay="200">
-            <div class="icon"><i class="icofont-atom"></i></div>
-            <h4 class="title"><a href="">Air Bubble Roll</a></h4>
-            <p class="description">Protecting fragile items during shipping is crucial. Our air bubble rolls are designed to provide superior cushioning and protection, preventing damage to your valuable items. From delicate electronics to fragile glassware, trust our air bubble rolls to keep your items safe and sound.</p>
-          </div>
-          <div class="col-lg-4 col-md-6 icon-box" data-aos="fade-up" data-aos-delay="300">
-            <div class="icon"><i class="icofont-spoon-and-fork"></i></div>
-            <h4 class="title"><a href="">Catering Disposable Items</a></h4>
-            <p class="description">Whether you're running a catering business, restaurant, or planning an event, our catering disposable items are designed to simplify your life. We offer an extensive range of disposable tableware and catering supplies, ensuring that your guests enjoy a hassle-free dining experience.</p>
-          </div>
-          <!-- <div class="col-lg-4 col-md-6 icon-box" data-aos="fade-up" data-aos-delay="400">
-            <div class="icon"><i class="icofont-settings"></i></div>
-            <h4 class="title"><a href="">Nemo Enim</a></h4>
-            <p class="description">At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque</p>
-          </div>
-          <div class="col-lg-4 col-md-6 icon-box" data-aos="fade-up" data-aos-delay="500">
-            <div class="icon"><i class="icofont-tasks-alt"></i></div>
-            <h4 class="title"><a href="">Eiusmod Tempor</a></h4>
-            <p class="description">Et harum quidem rerum facilis est et expedita distinctio. Nam libero tempore, cum soluta nobis est eligendi</p>
-          </div> -->
+        <div class="row" id="data-product">
+          <!-- $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ -->
         </div>
 
       </div>
@@ -510,13 +468,6 @@
             </p>
           </div>
 
-          <!-- <div class="col-lg-6 faq-item" data-aos="fade-up" data-aos-delay="500">
-            <h4>Tortor vitae purus faucibus ornare. Varius vel pharetra vel turpis nunc eget lorem dolor?</h4>
-            <p>
-              Laoreet sit amet cursus sit amet dictum sit amet justo. Mauris vitae ultricies leo integer malesuada nunc vel. Tincidunt eget nullam non nisi est sit amet. Turpis nunc eget lorem dolor sed. Ut venenatis tellus in metus vulputate eu scelerisque.
-            </p>
-          </div> -->
-
         </div>
 
       </div>
@@ -532,19 +483,17 @@
 
         <div class="row">
 
-          <div class="col-lg-3 d-flex align-items-stretch" data-aos="fade-up">
-            <div class="info-box">
-              <i class="bx bx-map"></i>
-              <h3>Our Address</h3>
-              <p>Plot No. T-56,<br/> East Mehram Nagar,<br/> Delhi 11003</p>
-            </div>
+          <div class="col-lg-3 d-flex align-items-stretch" data-aos="fade-up"  id="data-address-our">
+            <!-- $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ -->
           </div>
 
           <div class="col-lg-3 d-flex align-items-stretch" data-aos="fade-up" data-aos-delay="100">
             <div class="info-box">
               <i class="bx bx-envelope"></i>
               <h3>Email Us</h3>
-              <p><a href="mailto:kraniatraders@gmail.com">kraniatraders@gmail.com</a></p>
+              <p id="data-address-ourEmail">
+                <!-- $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ -->
+              </p>
             </div>
           </div>
 
@@ -552,7 +501,9 @@
             <div class="info-box ">
               <i class="bx bx-phone-call"></i>
               <h3>Call Us</h3>
-              <p><a href="tel:9810872015">+91 9810872015</a></p>
+              <p  id="data-address-ourMobile">
+                <!-- $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ -->
+              </p>
             </div>
           </div>
 
@@ -560,7 +511,9 @@
             <div class="info-box ">
               <i class="bx bxl-whatsapp"></i>
               <h3>Whatsapp</h3>
-              <p><a href="https://wa.me/981087201" target="_blank">+91 9810872015</a></p>
+              <p id="data-address-ourWhatsapp">
+                <!-- $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ -->
+                </p>
             </div>
           </div>
 
@@ -608,13 +561,8 @@
 
           <div class="col-lg-3 col-md-6 footer-info">
             <h3>Krania Traders</h3>
-            <p>
-              Plot No. T-56, <br>
-              East Mehram Nagar,<br>
-              Delhi 11003<br>
-              Phone: <a style="color:white;font-weight:bold;text-decoration: none;" href="tel:9810872015">+91 9810872015</a><br>
-              Email: <a style="color:white;font-weight:bold;text-decoration: none;" href="mailto:kraniatraders@gmail.com">kraniatraders@gmail.com</a><br>
-              Whatsapp: <a style="color:white;font-weight:bold;text-decoration: none;" href="https://wa.me/919810872015" target="_blank">+91 9810872015</a><br>
+            <p id="data-address-bottom">
+              <!-- $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ -->
             </p>
             <div class="social-links mt-3">
               <a href="#" class="twitter"><i class="bx bxl-twitter"></i></a>
@@ -638,11 +586,8 @@
 
           <div class="col-lg-3 col-md-6 footer-links">
             <h4>Our Product</h4>
-            <ul>
-              <li><i class="bx bx-chevron-right"></i> <a href="#">Plastic Sheets</a></li>
-              <li><i class="bx bx-chevron-right"></i> <a href="#">Stretch Film (Shrink Wrap Rolls)</a></li>
-              <li><i class="bx bx-chevron-right"></i> <a href="#">Air Bubble Roll</a></li>
-              <li><i class="bx bx-chevron-right"></i> <a href="#">Catering Disposable Items</a></li>
+            <ul id="data-product-bottom">
+              <!-- $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ -->
             </ul>
           </div>
 
